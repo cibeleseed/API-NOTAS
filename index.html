@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Notas Trimestrais</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --dark-color: #2c3e50;
+            --light-bg: #f5f6fa;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 20px;
+        }
+        header h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+        header p {
+            color: #7f8c8d;
+            margin: 5px 0 0 0;
+        }
+        .student-info-section {
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px;
+        }
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: #fcfcfc;
+        }
+        .discipline-name {
+            text-align: left;
+            font-weight: 600;
+        }
+        .input-nota {
+            width: 70px;
+            padding: 8px;
+            border: 1.5px solid #dcdde1;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 15px;
+        }
+        .actions-btn {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-calc { background-color: var(--success-color); color: white; }
+        .btn-clear { background-color: #7f8c8d; color: white; }
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 13px;
+        }
+        .badge-aprovado { background-color: #d4edda; color: #155724; }
+        .badge-reprovado { background-color: #f8d7da; color: #721c24; }
+        .seliga-tag {
+            background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;
+            padding: 4px 8px; border-radius: 4px; font-size: 12px;
+            display: inline-block; margin: 2px; font-weight: 600;
+        }
+        .results-section {
+            display: none;
+            margin-top: 30px;
+            border-top: 3px solid var(--primary-color);
+            padding-top: 30px;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: var(--light-bg); padding: 20px; border-radius: 8px;
+            text-align: center; border-left: 5px solid;
+        }
+        .card-aprovadas { border-left-color: var(--success-color); }
+        .card-reprovadas { border-left-color: var(--danger-color); }
+        .card-seliga { border-left-color: var(--warning-color); }
+        .card h3 { margin: 0 0 10px 0; font-size: 16px; color: #7f8c8d; }
+        .card .value { font-size: 28px; font-weight: bold; }
+        .rec-details {
+            background-color: #fffaf0; border: 1px solid #ffe8cc;
+            padding: 20px; border-radius: 8px; margin-bottom: 30px;
+        }
+        .rec-list { padding-left: 20px; margin: 0; }
+        .alert {
+            padding: 15px; background-color: #f8d7da; color: #721c24;
+            border-radius: 6px; margin-bottom: 20px; display: none; font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Calculadora Digital de Notas Trimestrais</h1>
+        <p>Ensino Médio - Controle Acadêmico de Desempenho (Via API)</p>
+    </header>
+    <div class="student-info-section">
+        <div class="form-group">
+            <label for="studentName">Nome do Estudante:</label>
+            <input type="text" id="studentName" placeholder="Digite o nome do aluno" required>
+        </div>
+    </div>
+    <div id="validationAlert" class="alert"></div>
+    <div class="table-responsive">
+        <table id="gradesTable">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Disciplina</th>
+                    <th>1º Trimestre</th>
+                    <th>2º Trimestre</th>
+                    <th>3º Trimestre</th>
+                    <th>Média Final</th>
+                    <th>Situação</th>
+                    <th>Recuperação (Se Liga)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="actions-btn">
+        <button class="btn btn-calc" onclick="enviarParaAPI()">CALCULAR VIA API</button>
+        <button class="btn btn-clear" onclick="limparNotas()">LIMPAR NOTAS</button>
+    </div>
+    <div id="resultsSection" class="results-section">
+        <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 25px;">Boletim Final Consolidador</h2>
+        <div class="summary-cards">
+            <div class="card card-aprovadas">
+                <h3>Disciplinas Aprovadas</h3>
+                <div class="value" id="sumAprovadas" style="color: var(--success-color);">0</div>
+            </div>
+            <div class="card card-reprovadas">
+                <h3>Disciplinas Não Aprovadas</h3>
+                <div class="value" id="sumReprovadas" style="color: var(--danger-color);">0</div>
+            </div>
+            <div class="card card-seliga">
+                <h3>Disciplinas c/ Indicação Se Liga</h3>
+                <div class="value" id="sumSeLiga" style="color: var(--warning-color);">0</div>
+            </div>
+        </div>
+        <div id="recDetails" class="rec-details" style="display: none;">
+            <h4>Relação de Recuperações Necessárias (Se Liga)</h4>
+            <ul id="recList" class="rec-list"></ul>
+        </div>
+    </div>
+</div>
+<script>
+const disciplinas = [
+    "Matemática", "Língua Portuguesa", "Física", "Química", "Biologia",
+    "História", "Geografia", "Filosofia / Sociologia", "Língua Inglesa",
+    "Educação Digital", "Educação Financeira", "Educação Física", "Resolução de Problemas"
+];
+const tbody = document.querySelector("#gradesTable tbody");
+disciplinas.forEach((dis, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+        <td class="discipline-name">${dis}</td>
+        <td><input type="number" class="input-nota" id="t1_${idx}" min="0" max="100" placeholder="-"></td>
+        <td><input type="number" class="input-nota" id="t2_${idx}" min="0" max="100" placeholder="-"></td>
+        <td><input type="number" class="input-nota" id="t3_${idx}" min="0" max="100" placeholder="-"></td>
+        <td><span id="media_${idx}" style="font-weight: bold;">-</span></td>
+        <td><span id="status_${idx}">-</span></td>
+        <td><div id="seliga_${idx}">-</div></td>
+    `;
+    tbody.appendChild(tr);
+});
+
+async function enviarParaAPI() {
+    const alertDiv = document.getElementById("validationAlert");
+    alertDiv.style.display = "none";
+    const studentName = document.getElementById("studentName").value.trim();
+    if (!studentName) {
+        alertDiv.innerHTML = "Por favor, preencha o Nome do Estudante.";
+        alertDiv.style.display = "block";
+        return;
+    }
+    
+    let payload = {
+        estudante: studentName,
+        boletim: []
+    };
+
+    for (let idx = 0; idx < disciplinas.length; idx++) {
+        const t1 = document.getElementById(`t1_${idx}`).value;
+        const t2 = document.getElementById(`t2_${idx}`).value;
+        const t3 = document.getElementById(`t3_${idx}`).value;
+        if (t1 === "" || t2 === "" || t3 === "") {
+            alertDiv.innerHTML = `Falta preencher nota em: ${disciplinas[idx]}`;
+            alertDiv.style.display = "block";
+            return;
+        }
+        payload.boletim.push({
+            disciplina: disciplinas[idx],
+            n1: parseFloat(t1),
+            n2: parseFloat(t2),
+            n3: parseFloat(t3)
+        });
+    }
+
+    try {
+        // Envia os dados para a nossa API Flask
+        const response = await fetch('http://127.0.0.1:5000/api/calcular', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        exibirResultados(data);
+    } catch (error) {
+        alertDiv.innerHTML = "Erro ao conectar com a API. Certifique-se de que o backend Flask está rodando!";
+        alertDiv.style.display = "block";
+    }
+}
+
+function exibirResultados(data) {
+    document.getElementById("sumAprovadas").innerText = data.resumo.aprovadas;
+    document.getElementById("sumReprovadas").innerText = data.resumo.reprovadas;
+    document.getElementById("sumSeLiga").innerText = data.resumo.total_se_liga;
+
+    data.resultados_disciplinas.forEach((res, idx) => {
+        document.getElementById(`media_${idx}`).innerText = res.media;
+        
+        const statusSpan = document.getElementById(`status_${idx}`);
+        if (res.aprovado) {
+            statusSpan.innerHTML = `<span class="status-badge badge-aprovado">APROVADO</span>`;
+        } else {
+            statusSpan.innerHTML = `<span class="status-badge badge-reprovado">NÃO APROVADO</span>`;
+        }
+
+        const seligaDiv = document.getElementById(`seliga_${idx}`);
+        seligaDiv.innerHTML = "";
+        if (res.recuperacoes.length > 0) {
+            res.recuperacoes.forEach(rec => {
+                seligaDiv.innerHTML += `<span class="seliga-tag">${rec}</span> `;
+            });
+        } else {
+            seligaDiv.innerText = "-";
+        }
+    });
+
+    const recDetailsDiv = document.getElementById("recDetails");
+    const recListUl = document.getElementById("recList");
+    recListUl.innerHTML = "";
+
+    if (data.lista_recuperacoes.length > 0) {
+        data.lista_recuperacoes.forEach(item => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${item.disciplina}</strong>: ${item.detalhes.join(', ')}`;
+            recListUl.appendChild(li);
+        });
+        recDetailsDiv.style.display = "block";
+    } else {
+        recDetailsDiv.style.display = "none";
+    }
+    document.getElementById("resultsSection").style.display = "block";
+    document.getElementById("resultsSection").scrollIntoView({ behavior: 'smooth' });
+}
+
+function limparNotas() {
+    document.getElementById("studentName").value = "";
+    document.getElementById("validationAlert").style.display = "none";
+    document.getElementById("resultsSection").style.display = "none";
+    for (let idx = 0; idx < disciplinas.length; idx++) {
+        document.getElementById(`t1_${idx}`).value = "";
+        document.getElementById(`t2_${idx}`).value = "";
+        document.getElementById(`t3_${idx}`).value = "";
+        document.getElementById(`media_${idx}`).innerText = "-";
+        document.getElementById(`status_${idx}`).innerText = "-";
+        document.getElementById(`seliga_${idx}`).innerText = "-";
+    }
+}
+</script>
+</body>
+</html>"""
+
